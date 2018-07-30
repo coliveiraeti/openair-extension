@@ -1,0 +1,10 @@
+input.ext-timer-oa {
+    font-size: 1.2em;
+    font-weight: bold;
+    width: 5em;
+    color: #666;
+}
+
+.dialogControlGroup-timer {
+    padding-top: 0 !important;
+}

@@ -1,0 +1,28 @@
+{
+  "name": "Openair Timer",
+  "version": "1.0",
+  "description": "Timer and customization to Openair timesheets",
+  "permissions": ["activeTab"],
+  "content_scripts": [
+    {
+      "matches": ["https://www.openair.com/timesheet.pl*"],
+      "js": ["contentScript.js"],
+      "css": ["extension.css"]
+    }
+  ],  
+  "page_action": {
+    "default_icon": {
+      "16": "images/openair-extension16.png",
+      "32": "images/openair-extension32.png",
+      "48": "images/openair-extension48.png",
+      "128": "images/openair-extension128.png"
+    }
+  },
+  "icons": {
+    "16": "images/openair-extension16.png",
+    "32": "images/openair-extension32.png",
+    "48": "images/openair-extension48.png",
+    "128": "images/openair-extension128.png"
+  },
+  "manifest_version": 2
+}
