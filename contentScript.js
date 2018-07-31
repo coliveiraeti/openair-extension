@@ -6,6 +6,7 @@ var openairExtension = (function() {
     var observer = null;
     var dialogNotes = null;
     var activeDialogControl = null;
+    var clipboard = null;
 
     var start = function() {
         window.addEventListener('unload', stop);
@@ -114,8 +115,24 @@ var openairExtension = (function() {
         newControlGroup.innerHTML = getNewDialogTemplate();
         if (newControlGroup.innerHTML.length > 0)
         {
+            var copyPasteButtons = '<div class="dialogControls">';
+            copyPasteButtons += '<button id="ext_btn_copy" class="btn-oa">Copy</button>';
+            copyPasteButtons += '<button id="ext_btn_paste" class="btn-oa">Paste</button>';
+            copyPasteButtons += '</div>';
+
+            newControlGroup.innerHTML = copyPasteButtons + newControlGroup.innerHTML;
             group.style.display = 'none';
             group.parentElement.insertBefore(newControlGroup, group);
+
+            document.getElementById('ext_btn_copy').addEventListener('click', function(){
+                clipboard = new Function(getFromTemplateScript())();
+                alert(clipboard);
+            }); 
+            
+            document.getElementById('ext_btn_paste').addEventListener('click', function(){
+                var script = 'var notes = "' + clipboard + '";';
+                populateNewDialogTemplate(script);
+            });             
         }
 
         var timerHtml = '<label class="dialogControlLabel" for="ext_timer">Timer</label>';
@@ -133,7 +150,8 @@ var openairExtension = (function() {
         displayCurrentTimer(activeDialogControl.id);
         updateTimerButton();
 
-        populateNewDialogTemplate();
+        var script = 'var notes = "' + dialogNotes.value + '";';
+        populateNewDialogTemplate(script);
     }
 
     var manageExtensionTimer = function() {
@@ -193,15 +211,30 @@ var openairExtension = (function() {
         var okButton = document.querySelector('div.dialogHeaderButtons button.dialogOkButton');
         var closeAndSaveButton = document.querySelector('div.dialogHeaderButtons button.dialogCloseAndSaveButton');
 
+        script = getFromTemplateScript();
+
+        cloneButton(okButton, script);
+        cloneButton(closeAndSaveButton, script);
+    }
+
+    var getToTemplateScript = function() {
+        script = 'var re = /\\s+[\/\;-]\\s+/g;';
+        script += 'var chunks = notes.split(re);';
+        script += 'document.getElementById("ext_client").value = chunks.length > 0 ? chunks[0].trim() : "";';
+        script += 'document.getElementById("ext_jira").value = chunks.length > 1 ? chunks[1].trim() : "";';
+        script += 'document.getElementById("ext_prod").value = chunks.length > 2 ? chunks[2].trim() : "";';
+        script += 'document.getElementById("ext_desc").value = chunks.length > 3 ? chunks[3].trim() : "";';
+        return script;        
+    }
+
+    var getFromTemplateScript = function() {
         var script = 'var client = document.getElementById("ext_client").value.length > 0 ? document.getElementById("ext_client").value : "NA";';
         script += 'var jira = document.getElementById("ext_jira").value.length > 0 ? document.getElementById("ext_jira").value : "NA";';
         script += 'var prod = document.getElementById("ext_prod").value.length > 0 ? document.getElementById("ext_prod").value : "NA";';
         script += 'var desc = document.getElementById("ext_desc").value.length > 0 ? document.getElementById("ext_desc").value : "NA";';
         script += 'var temp = client + " / " + jira + " / " + prod + " - " + desc;'
         script += 'return temp === "NA / NA / NA - NA" ? "" : temp;';
-
-        cloneButton(okButton, script);
-        cloneButton(closeAndSaveButton, script);
+        return script;
     }
 
     var getNewDialogTemplate = function() {
@@ -216,15 +249,8 @@ var openairExtension = (function() {
         return html;
     }
 
-    var populateNewDialogTemplate = function() {
-        var script = 'var notes = "' + dialogNotes.value + '";';
-
-        script += 'var re = /\s*[\/\;-]\s*/g;';
-        script += 'var chunks = notes.split(re);';
-        script += 'document.getElementById("ext_client").value = chunks.length > 0 ? chunks[0] : "";';
-        script += 'document.getElementById("ext_jira").value = chunks.length > 1 ? chunks[1] : "";';
-        script += 'document.getElementById("ext_prod").value = chunks.length > 2 ? chunks[2] : "";';
-        script += 'document.getElementById("ext_desc").value = chunks.length > 3 ? chunks[3] : "";';
+    var populateNewDialogTemplate = function(script) {
+        script += getToTemplateScript();
         new Function(script)();
     }
 
