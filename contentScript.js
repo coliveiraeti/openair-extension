@@ -126,7 +126,6 @@ var openairExtension = (function() {
 
             document.getElementById('ext_btn_copy').addEventListener('click', function(){
                 clipboard = new Function(getFromTemplateScript())();
-                alert(clipboard);
             }); 
             
             document.getElementById('ext_btn_paste').addEventListener('click', function(){
@@ -156,15 +155,26 @@ var openairExtension = (function() {
 
     var manageExtensionTimer = function() {
         var exists = 0;
+        var active = 0;
         for (var i = 0; i < currentExtensionTimers.length; i++) {
             if (currentExtensionTimers[i].name === activeDialogControl.id) {
-                currentExtensionTimers[i].active = currentExtensionTimers[i].active * -1;
+                active = currentExtensionTimers[i].active * -1;
+                currentExtensionTimers[i].active = active;
                 exists = 1;
                 break;
             }
         }
-        if (exists === 1) return;
-        currentExtensionTimers.push({ name: activeDialogControl.id, seconds: 0, active: 1 });
+        if (exists === 0) {
+            active = 1;
+            currentExtensionTimers.push({ name: activeDialogControl.id, seconds: 0, active: active });
+        }
+        if (active > 0) {
+            var iconUrl = chrome.runtime.getURL('clock.png');
+            activeDialogControl.setAttribute('style', 'background: #f1f0ee url("' + iconUrl + '") no-repeat left top; color: #999;')
+        }
+        else {
+            activeDialogControl.setAttribute('style', '');
+        }
     }
 
     var displayCurrentTimer = function(name, seconds) {
