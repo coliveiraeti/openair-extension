@@ -118,6 +118,7 @@ var openairExtension = (function() {
             var copyPasteButtons = '<div class="dialogControls">';
             copyPasteButtons += '<button id="ext_btn_copy" class="btn-oa">Copy</button>';
             copyPasteButtons += '<button id="ext_btn_paste" class="btn-oa">Paste</button>';
+            copyPasteButtons += '<button id="ext_btn_clear" class="btn-oa">Clear</button>';
             copyPasteButtons += '</div>';
 
             newControlGroup.innerHTML = copyPasteButtons + newControlGroup.innerHTML;
@@ -126,12 +127,17 @@ var openairExtension = (function() {
 
             document.getElementById('ext_btn_copy').addEventListener('click', function(){
                 clipboard = new Function(getFromTemplateScript())();
-            }); 
+            });
             
             document.getElementById('ext_btn_paste').addEventListener('click', function(){
                 var script = 'var notes = "' + clipboard + '";';
                 populateNewDialogTemplate(script);
-            });             
+            });
+
+            document.getElementById('ext_btn_clear').addEventListener('click', function(){
+                var script = 'var notes = "";';
+                populateNewDialogTemplate(script);
+            });
         }
 
         var timerHtml = '<label class="dialogControlLabel" for="ext_timer">Timer</label>';
