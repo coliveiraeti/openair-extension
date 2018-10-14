@@ -1,4 +1,4 @@
-var openairExtension = (function() {
+const openairExtension = (function() {
     var debug = true;
     var timer = null;
     var dialogTimer = null;
@@ -8,13 +8,13 @@ var openairExtension = (function() {
     var activeDialogControl = null;
     var clipboard = null;
 
-    var start = function() {
+    const start = function() {
         window.addEventListener('unload', stop);
         initObserver();
         startExtensionTimer();
     }
 
-    var stop = function() {
+    const stop = function() {
         stopObserver();
         stopExtensionTimer();
         info('Extension stopped');
@@ -159,14 +159,16 @@ var openairExtension = (function() {
         populateNewDialogTemplate(script);
     }
 
-    var manageExtensionTimer = function() {
+    const manageExtensionTimer = function() {
         var exists = 0;
         var active = 0;
+        var seconds = 0;
         for (var i = 0; i < currentExtensionTimers.length; i++) {
             if (currentExtensionTimers[i].name === activeDialogControl.id) {
                 active = currentExtensionTimers[i].active * -1;
                 currentExtensionTimers[i].active = active;
                 exists = 1;
+                if (active < 0) seconds = currentExtensionTimers[i].seconds; 
                 break;
             }
         }
@@ -176,9 +178,10 @@ var openairExtension = (function() {
         }
         if (active > 0) {
             var iconUrl = chrome.runtime.getURL('clock.png');
-            activeDialogControl.setAttribute('style', 'background: #f1f0ee url("' + iconUrl + '") no-repeat left top; color: #999;')
+            activeDialogControl.setAttribute('style', 'background: #f1f0ee url("' + iconUrl + '") no-repeat left top; color: #999;');
         }
         else {
+            activeDialogControl.value = formatSecondsIntoOAFormat(seconds);
             activeDialogControl.setAttribute('style', '');
         }
     }
@@ -200,7 +203,7 @@ var openairExtension = (function() {
         timerInput.value = formatSecondsIntoTime(seconds);
     }
 
-    var updateTimerButton = function() {
+    const updateTimerButton = function() {
         var text = 'Start';
         var button = document.getElementById('ext_btn_timer');
         for (var i = 0; i < currentExtensionTimers.length; i++) {
@@ -217,11 +220,21 @@ var openairExtension = (function() {
         button.innerText = text;
     }
 
-    var formatSecondsIntoTime = function(seconds) {
+    const formatSecondsIntoTime = function(seconds) {
         var date = new Date(null);
         date.setSeconds(seconds);
         return date.toISOString().substr(11,8);
     }
+
+    const formatSecondsIntoOAFormat = (seconds) => {
+        var hours = Math.floor(seconds / 3600);
+        var minutes = Math.floor(seconds / 60) - (hours * 60);
+        var m = (parseInt((minutes + 7.5)/15) * 15) % 60;
+        m = Math.floor((m * 10) / 6);
+        var h = minutes > 52 ? (hours === 23 ? 0 : ++hours) : hours;
+        if (m === 0) return '' + h;
+        return '' + h + '.' + m;
+    }    
 
     var fakeDialogButtons = function() {
         var okButton = document.querySelector('div.dialogHeaderButtons button.dialogOkButton');
